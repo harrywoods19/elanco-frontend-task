@@ -1,0 +1,35 @@
+[
+  {
+    "id": "1",
+    "location": "London",
+    "lat": 51.5074,
+    "lng": -0.1278,
+    "species": "Ixodes ricinus",
+    "severity": "High",
+    "date": "2026-08-20",
+    "isRecent": true,
+    "notes": "Found near Hyde Park."
+  },
+  {
+    "id": "2",
+    "location": "Manchester",
+    "lat": 53.4808,
+    "lng": -2.2426,
+    "species": "Ixodes hexagonus",
+    "severity": "Medium",
+    "date": "2026-08-25",
+    "isRecent": true,
+    "notes": "Spotted in local woodland trail."
+  },
+  {
+    "id": "3",
+    "location": "Edinburgh",
+    "lat": 55.9533,
+    "lng": -3.1883,
+    "species": "Ixodes ricinus",
+    "severity": "Low",
+    "date": "2026-07-30",
+    "isRecent": false,
+    "notes": "Castor bean tick reported."
+  }
+]

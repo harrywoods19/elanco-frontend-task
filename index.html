@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Elanco UK Tick Sightings Tracker</title>
+    <!-- Tailwind CSS for Elanco Corporate Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Leaflet CSS for Map -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-slate-100 font-sans text-slate-800">
+
+    <!-- Header Bar -->
+    <header class="bg-[#003366] text-white shadow-md py-4 px-6 flex justify-between items-center">
+        <div class="flex items-center space-x-3">
+            <div class="bg-[#0066B2] p-2 rounded-lg font-bold">🐛</div>
+            <div>
+                <h1 class="text-xl font-bold tracking-wide">Elanco Tick Sightings Tracker</h1>
+                <p class="text-xs text-blue-200">UK Public Health & Veterinary Surveillance MVP</p>
+            </div>
+        </div>
+        <button onclick="openReportForm()" class="bg-[#0066B2] hover:bg-blue-600 font-semibold text-white px-4 py-2 rounded-lg shadow transition">
+            + Report Sighting
+        </button>
+    </header>
+
+    <main class="max-w-7xl mx-auto p-4 md:p-6 space-y-6">
+        
+        <!-- Filter Controls -->
+        <div class="bg-white p-4 rounded-xl shadow-sm border border-slate-200 flex flex-wrap gap-4 items-center">
+            <span class="font-semibold text-slate-700">Filters:</span>
+            <div>
+                <label class="block text-xs text-slate-500">Species</label>
+                <select id="speciesFilter" onchange="filterData()" class="border border-slate-300 rounded-md px-3 py-1.5 text-sm">
+                    <option value="Any">Any Species</option>
+                    <option value="Ixodes ricinus">Ixodes ricinus (Castor bean)</option>
+                    <option value="Ixodes hexagonus">Ixodes hexagonus (Hedgehog)</option>
+                    <option value="Dermacentor reticulatus">Dermacentor reticulatus (Ornate dog)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs text-slate-500">Severity</label>
+                <select id="severityFilter" onchange="filterData()" class="border border-slate-300 rounded-md px-3 py-1.5 text-sm">
+                    <option value="Any">Any Severity</option>
+                    <option value="High">High</option>
+                    <option value="Medium">Medium</option>
+                    <option value="Low">Low</option>
+                </select>
+            </div>
+            <div class="flex items-center gap-2 mt-4">
+                <input type="checkbox" id="recentFilter" onchange="filterData()" class="w-4 h-4 text-[#0066B2] rounded">
+                <label for="recentFilter" class="text-sm text-slate-700 font-medium">Recent Activity Only (Past 14 days)</label>
+            </div>
+        </div>
+
+        <!-- Map & Results Grid -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div class="lg:col-span-2 bg-white rounded-xl shadow-sm border border-slate-200 p-2 h-[500px] relative">
+                <div id="map" class="w-full h-full rounded-lg"></div>
+            </div>
+
+            <!-- Sightings List Panel -->
+            <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-4 flex flex-col h-[500px]">
+                <h2 class="font-semibold text-slate-800 mb-3 text-lg">Reported Locations</h2>
+                <div id="sightingsList" class="overflow-y-auto space-y-3 pr-1 flex-1">
+                    <!-- Populated dynamically by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Educational Content Section -->
+        <div class="bg-white rounded-xl shadow-sm border border-slate-200 p-6">
+            <div class="flex border-b border-slate-200 mb-6 gap-4">
+                <button onclick="switchTab('species')" id="tabSpecies" class="pb-3 px-4 font-semibold text-sm border-b-2 border-[#003366] text-[#003366]">Species Guide</button>
+                <button onclick="switchTab('prevention')" id="tabPrevention" class="pb-3 px-4 font-semibold text-sm border-b-2 border-transparent text-slate-500">Prevention Tips</button>
+            </div>
+
+            <div id="speciesContent" class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div class="border border-slate-200 p-4 rounded-lg bg-slate-50">
+                    <h4 class="font-bold text-slate-800">Ixodes ricinus</h4>
+                    <p class="text-xs text-slate-500 mb-2">Castor Bean Tick</p>
+                    <p class="text-sm text-slate-600">Most common UK tick. Vector for Lyme disease. Found in woodlands and parks.</p>
+                </div>
+                <div class="border border-slate-200 p-4 rounded-lg bg-slate-50">
+                    <h4 class="font-bold text-slate-800">Ixodes hexagonus</h4>
+                    <p class="text-xs text-slate-500 mb-2">Hedgehog Tick</p>
+                    <p class="text-sm text-slate-600">Frequently found on domestic cats and dogs inspecting garden hedge habitats.</p>
+                </div>
+                <div class="border border-slate-200 p-4 rounded-lg bg-slate-50">
+                    <h4 class="font-bold text-slate-800">Dermacentor reticulatus</h4>
+                    <p class="text-xs text-slate-500 mb-2">Ornate Dog Tick</p>
+                    <p class="text-sm text-slate-600">Vector for Babesiosis. Expanding in South-East UK habitats.</p>
+                </div>
+            </div>
+
+            <div id="preventionContent" class="hidden space-y-3 text-sm text-slate-700">
+                <p>🛡️ Check pets thoroughly after walking through tall grass or woodland areas.</p>
+                <p>🛡️ Use veterinarian-recommended year-round preventative spot-on treatments.</p>
+                <p>🛡️ Safely remove attached ticks immediately using a proper tick twist tool.</p>
+            </div>
+        </div>
+    </main>
+
+    <!-- Report Modal Form -->
+    <div id="reportModal" class="hidden fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-[2000] flex justify-center items-center p-4">
+        <div class="bg-white rounded-xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex justify-between items-center mb-4">
+                <h3 class="text-lg font-bold text-slate-800">Report Tick Sighting</h3>
+                <button onclick="closeReportForm()" class="text-slate-400 hover:text-slate-600 font-bold">✕</button>
+            </div>
+            <div id="formAlert" class="hidden p-3 rounded mb-4 text-sm bg-green-50 text-green-700 border border-green-200"></div>
+            <form id="sightingForm" onsubmit="submitSighting(event)" class="space-y-4 text-sm">
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">UK City / Location *</label>
+                    <input type="text" id="formLocation" required placeholder="e.g. York" class="w-full border border-slate-300 rounded p-2">
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Latitude</label>
+                        <input type="number" id="formLat" step="any" value="53.9590" class="w-full border border-slate-300 rounded p-2">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Longitude</label>
+                        <input type="number" id="formLng" step="any" value="-1.0815" class="w-full border border-slate-300 rounded p-2">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Species</label>
+                        <select id="formSpecies" class="w-full border border-slate-300 rounded p-2">
+                            <option value="Ixodes ricinus">Ixodes ricinus</option>
+                            <option value="Ixodes hexagonus">Ixodes hexagonus</option>
+                            <option value="Dermacentor reticulatus">Dermacentor reticulatus</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Severity</label>
+                        <select id="formSeverity" class="w-full border border-slate-300 rounded p-2">
+                            <option value="Low">Low</option>
+                            <option value="Medium">Medium</option>
+                            <option value="High">High</option>
+                        </select>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Upload Photo</label>
+                    <input type="file" id="formImage" accept="image/*" class="w-full text-xs text-slate-500">
+                </div>
+                <button type="submit" class="w-full bg-[#0066B2] text-white py-2 rounded-lg font-bold hover:bg-blue-600 transition">Submit Report</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Leaflet JS & App Script -->
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

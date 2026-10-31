@@ -1,0 +1,9 @@
+body {
+    background-color: #f8fafc;
+}
+
+.custom-marker {
+    border-radius: 50%;
+    border: 2px solid white;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
